@@ -310,7 +310,7 @@ type
       FDeleteAfterUse: Boolean;
       FLoadedFromSettings: Boolean;
       FNetType: TNetType;
-      FHostname, FUsername, FPassword, FAllDatabases, FLibraryOrProvider, FComment, FStartupScriptFilename,
+      FHostname, FUsername, FPassword, FDomain, FAllDatabases, FLibraryOrProvider, FComment, FStartupScriptFilename,
       FSessionPath, FSSLPrivateKey, FSSLCertificate, FSSLCACertificate, FSSLCipher, FServerVersion,
       FSSHHost, FSSHUser, FSSHPassword, FSSHExe, FSSHPrivateKey,
       FIgnoreDatabasePattern: String;
@@ -378,6 +378,7 @@ type
       property Port: Integer read FPort write FPort;
       property Username: String read FUsername write FUsername;
       property Password: String read FPassword write FPassword;
+      property Domain: String read FDomain write FDomain;
       property LoginPrompt: Boolean read FLoginPrompt write FLoginPrompt;
       property WindowsAuth: Boolean read FWindowsAuth write FWindowsAuth;
       property CleartextPluginEnabled: Boolean read FCleartextPluginEnabled write FCleartextPluginEnabled;
@@ -1425,6 +1426,7 @@ begin
   FForceUnicode := AppSettings.GetDefaultBool(asForceUnicode);
   FUsername := DefaultUsername;
   FPassword := AppSettings.GetDefaultString(asPassword);
+  FDomain := AppSettings.GetDefaultString(asDomain);
   FPort := DefaultPort;
   FCompressed := AppSettings.GetDefaultBool(asCompressed);
   FAllDatabases := AppSettings.GetDefaultString(asDatabases);
@@ -1496,6 +1498,7 @@ begin
     FPassword := decrypt(AppSettings.ReadString(asPassword));
     FLoginPrompt := AppSettings.ReadBool(asLoginPrompt);
     FWindowsAuth := AppSettings.ReadBool(asWindowsAuth);
+    FDomain := AppSettings.ReadString(asDomain);
     FCleartextPluginEnabled := AppSettings.ReadBool(asCleartextPluginEnabled);
     FForceUnicode := AppSettings.ReadBool(asForceUnicode);
     FPort := MakeInt(AppSettings.ReadString(asPort));
@@ -1575,6 +1578,7 @@ begin
   else begin
     AppSettings.WriteString(asHost, FHostname);
     AppSettings.WriteBool(asWindowsAuth, FWindowsAuth);
+    AppSettings.WriteString(asDomain, FDomain);
     AppSettings.WriteBool(asCleartextPluginEnabled, FCleartextPluginEnabled);
     AppSettings.WriteBool(asForceUnicode, FForceUnicode);
     AppSettings.WriteString(asUser, FUsername);
@@ -2756,6 +2760,7 @@ var
   rx: TRegExpr;
   FinalPort, i: Integer;
   IsOldProvider: Boolean;
+  LogonToken: THandle;
 begin
   if Value then begin
     DoBeforeConnect;
@@ -2802,7 +2807,9 @@ begin
 
     // Quote password, just in case there is a semicolon or a double quote in it.
     // See http://forums.asp.net/t/1957484.aspx?Passwords+ending+with+semi+colon+as+the+terminal+element+in+connection+strings+
-    if Pos('"', Parameters.Password) > 0 then
+    if Parameters.WindowsAuth then
+      QuotedPassword := '""' // Never pass a Windows/domain password as SQL login password
+    else if Pos('"', Parameters.Password) > 0 then
       QuotedPassword := ''''+Parameters.Password+''''
     else
       QuotedPassword := '"'+Parameters.Password+'"';
@@ -2843,7 +2850,30 @@ begin
     end;
 
     try
-      FAdoHandle.Connected := True;
+      // Windows authentication with explicit domain credentials, like "runas /netonly":
+      // network logons on this thread use the given account. SSPI negotiates NTLM, or
+      // Kerberos if the client can get a ticket for the server's SPN.
+      LogonToken := 0;
+      if Parameters.WindowsAuth and (not Parameters.Domain.IsEmpty) then begin
+        Log(lcInfo, f_('Using Windows credentials of %s', [Parameters.Domain+'\'+Parameters.Username]));
+        if not LogonUser(PChar(Parameters.Username), PChar(Parameters.Domain), PChar(Parameters.Password),
+          LOGON32_LOGON_NEW_CREDENTIALS, LOGON32_PROVIDER_WINNT50, LogonToken) then
+          RaiseLastOSError;
+        if not ImpersonateLoggedOnUser(LogonToken) then begin
+          CloseHandle(LogonToken);
+          RaiseLastOSError;
+        end;
+      end;
+      try
+        // shortcut: impersonation only covers this initial login. Extra implicit connections ADO
+        // may open later run as the process user; keep the token for the connection lifetime if that bites.
+        FAdoHandle.Connected := True;
+      finally
+        if LogonToken <> 0 then begin
+          RevertToSelf;
+          CloseHandle(LogonToken);
+        end;
+      end;
       FConnectionStarted := GetTickCount div 1000;
       FActive := True;
       // No need to set a charset for MS SQL

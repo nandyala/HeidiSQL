@@ -41,6 +41,8 @@ type
     editPassword: TEdit;
     editUsername: TButtonedEdit;
     editHost: TButtonedEdit;
+    lblDomain: TLabel;
+    editDomain: TEdit;
     tabAdvanced: TTabSheet;
     tabStatistics: TTabSheet;
     lblLastConnectLeft: TLabel;
@@ -499,6 +501,7 @@ begin
     Sess.Password := editPassword.Text;
     Sess.LoginPrompt := chkLoginPrompt.Checked;
     Sess.WindowsAuth := chkWindowsAuth.Checked;
+    Sess.Domain := editDomain.Text;
     Sess.CleartextPluginEnabled := chkCleartextPluginEnabled.Checked;
     Sess.ForceUnicode := chkForceUnicode.Checked;
     Sess.Port := updownPort.Position;
@@ -724,6 +727,7 @@ begin
     Result.Password := editPassword.Text;
     Result.LoginPrompt := chkLoginPrompt.Checked;
     Result.WindowsAuth := chkWindowsAuth.Checked;
+    Result.Domain := editDomain.Text;
     Result.CleartextPluginEnabled := chkCleartextPluginEnabled.Checked;
     Result.ForceUnicode := chkForceUnicode.Checked;
     if updownPort.Enabled then
@@ -1036,6 +1040,7 @@ begin
     editPassword.Text := Sess.Password;
     chkLoginPrompt.Checked := Sess.LoginPrompt;
     chkWindowsAuth.Checked := Sess.WindowsAuth;
+    editDomain.Text := Sess.Domain;
     chkCleartextPluginEnabled.Checked := Sess.CleartextPluginEnabled;
     chkForceUnicode.Checked := Sess.ForceUnicode;
     updownPort.Position := Sess.Port;
@@ -1506,6 +1511,7 @@ begin
       or (Sess.Username <> editUsername.Text)
       or (Sess.LoginPrompt <> chkLoginPrompt.Checked)
       or (Sess.WindowsAuth <> chkWindowsAuth.Checked)
+      or (Sess.Domain <> editDomain.Text)
       or (Sess.CleartextPluginEnabled <> chkCleartextPluginEnabled.Checked)
       or (Sess.ForceUnicode <> chkForceUnicode.Checked)
       or (Sess.Port <> updownPort.Position)
@@ -1544,7 +1550,7 @@ begin
     FOnlyPasswordModified := PasswordModified and (not FSessionModified);
     FSessionModified := FSessionModified or PasswordModified;
     if (Sender=editHost) or (Sender=editUsername) or (Sender=editPassword) or
-      (Sender=comboNetType) or (Sender=chkWindowsAuth) or (Sender=editPort) or
+      (Sender=comboNetType) or (Sender=chkWindowsAuth) or (Sender=editDomain) or (Sender=editPort) or
       (Sender=chkCleartextPluginEnabled) or (Sender=chkForceUnicode)
       then begin
       // Be sure to use the modified connection params next time the user clicks the "Databases" pulldown
@@ -1628,9 +1634,12 @@ begin
       editHost.RightButton.Visible := Params.IsAnySQLite;
       chkLoginPrompt.Enabled := Params.NetTypeGroup in [ngMySQL, ngMSSQL, ngPgSQL];
       chkWindowsAuth.Enabled := Params.IsAnyMSSQL or Params.IsAnyMySQL;
+      // Domain switches MSSQL Windows authentication from the current to the given account
+      lblDomain.Enabled := Params.IsAnyMSSQL and chkWindowsAuth.Checked;
+      editDomain.Enabled := lblDomain.Enabled;
       lblUsername.Enabled := (Params.NetTypeGroup in [ngMySQL, ngMSSQL, ngPgSQL, ngInterbase])
         and ((not chkLoginPrompt.Checked) or (not chkLoginPrompt.Enabled))
-        and ((not chkWindowsAuth.Checked) or (not chkWindowsAuth.Enabled));
+        and ((not chkWindowsAuth.Checked) or (not chkWindowsAuth.Enabled) or (editDomain.Enabled and (editDomain.Text <> '')));
       lblUsername.Enabled := lblUsername.Enabled or (Params.NetType = ntSQLiteEncrypted);
       editUsername.Enabled := lblUsername.Enabled;
       editUsername.RightButton.Visible := Params.NetType = ntSQLiteEncrypted;

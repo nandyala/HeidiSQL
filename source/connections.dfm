@@ -154,7 +154,7 @@ object connform: Tconnform
         429)
       object lblPort: TLabel
         Left = 3
-        Top = 199
+        Top = 224
         Width = 27
         Height = 14
         Caption = 'Port:'
@@ -162,7 +162,7 @@ object connform: Tconnform
       end
       object lblPassword: TLabel
         Left = 3
-        Top = 174
+        Top = 199
         Width = 55
         Height = 14
         Caption = 'Password:'
@@ -178,7 +178,7 @@ object connform: Tconnform
       end
       object lblUsername: TLabel
         Left = 3
-        Top = 149
+        Top = 174
         Width = 28
         Height = 14
         Caption = 'User:'
@@ -193,14 +193,14 @@ object connform: Tconnform
       end
       object lblDatabase: TLabel
         Left = 3
-        Top = 247
+        Top = 272
         Width = 59
         Height = 14
         Caption = 'Databases:'
       end
       object lblComment: TLabel
         Left = 3
-        Top = 274
+        Top = 299
         Width = 57
         Height = 14
         Caption = 'Comment:'
@@ -214,53 +214,53 @@ object connform: Tconnform
       end
       object chkCompressed: TCheckBox
         Left = 190
-        Top = 221
+        Top = 246
         Width = 316
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Compressed client/server protocol'
-        TabOrder = 9
+        TabOrder = 10
         OnClick = Modification
       end
       object editPort: TEdit
         Left = 190
-        Top = 196
+        Top = 221
         Width = 57
         Height = 22
-        TabOrder = 7
+        TabOrder = 8
         Text = '0'
         OnChange = Modification
       end
       object updownPort: TUpDown
         Left = 247
-        Top = 196
+        Top = 221
         Width = 16
         Height = 22
         Associate = editPort
         Max = 2147483647
-        TabOrder = 8
+        TabOrder = 9
         Thousands = False
         Wrap = True
       end
       object editPassword: TEdit
         Left = 190
-        Top = 171
+        Top = 196
         Width = 316
         Height = 22
         Anchors = [akLeft, akTop, akRight]
         PasswordChar = '*'
-        TabOrder = 6
+        TabOrder = 7
         OnChange = Modification
       end
       object editUsername: TButtonedEdit
         Left = 190
-        Top = 146
+        Top = 171
         Width = 316
         Height = 22
         Anchors = [akLeft, akTop, akRight]
         Images = MainForm.VirtualImageListMain
         RightButton.ImageIndex = 75
-        TabOrder = 5
+        TabOrder = 6
         OnChange = Modification
         OnExit = editTrim
         OnRightButtonClick = editUsernameRightButtonClick
@@ -314,26 +314,45 @@ object connform: Tconnform
         TabOrder = 4
         OnClick = chkLoginPromptClick
       end
+      object lblDomain: TLabel
+        Left = 3
+        Top = 149
+        Width = 44
+        Height = 14
+        Caption = 'Domain:'
+        FocusControl = editDomain
+      end
+      object editDomain: TEdit
+        Left = 190
+        Top = 146
+        Width = 316
+        Height = 22
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 5
+        TextHint = 'Optional, for NTLM login with other Windows account'
+        OnChange = Modification
+        OnExit = editTrim
+      end
       object memoComment: TMemo
         Left = 190
-        Top = 271
+        Top = 296
         Width = 316
-        Height = 153
+        Height = 128
         Anchors = [akLeft, akTop, akRight, akBottom]
         ScrollBars = ssVertical
-        TabOrder = 11
+        TabOrder = 12
         OnChange = Modification
       end
       object editDatabases: TButtonedEdit
         Left = 190
-        Top = 244
+        Top = 269
         Width = 316
         Height = 22
         Anchors = [akLeft, akTop, akRight]
         Images = MainForm.VirtualImageListMain
         RightButton.ImageIndex = 75
         RightButton.Visible = True
-        TabOrder = 10
+        TabOrder = 11
         TextHint = 'Separated by semicolon'
         OnChange = Modification
         OnRightButtonClick = editDatabasesRightButtonClick

@@ -189,7 +189,7 @@ type
     asWrapLongLines, asCodeFolding, asDisplayBLOBsAsText, asSingleQueries, asMemoEditorWidth, asMemoEditorHeight, asMemoEditorMaximized,
     asMemoEditorWrap, asMemoEditorHighlighter, asMemoEditorAlwaysFormatCode, asDelimiter, asSQLHelpWindowLeft, asSQLHelpWindowTop, asSQLHelpWindowWidth,
     asSQLHelpWindowHeight, asSQLHelpPnlLeftWidth, asSQLHelpPnlRightTopHeight, asHost,
-    asUser, asPassword, asCleartextPluginEnabled, asForceUnicode, asWindowsAuth, asLoginPrompt, asPort, asLibrary, asAllProviders,
+    asUser, asPassword, asCleartextPluginEnabled, asForceUnicode, asWindowsAuth, asDomain, asLoginPrompt, asPort, asLibrary, asAllProviders,
     asSSHtunnelActive, asPlinkExecutable, asSshExecutable, asSSHtunnelHost, asSSHtunnelHostPort, asSSHtunnelPort, asSSHtunnelUser,
     asSSHtunnelPassword, asSSHtunnelTimeout, asSSHtunnelPrivateKey, asSSLActive, asSSLKey,
     asSSLCert, asSSLCA, asSSLCipher, asSSLVerification, asSSLWarnUnused, asNetType, asCompressed, asLocalTimeZone, asQueryTimeout, asKeepAlive,
@@ -3941,6 +3941,7 @@ begin
   InitSetting(asCleartextPluginEnabled,           'CleartextPluginEnabled',                0, False, '', True);
   InitSetting(asForceUnicode,                     'ForceUnicode',                          0, True, '', True);
   InitSetting(asWindowsAuth,                      'WindowsAuth',                           0, False, '', True);
+  InitSetting(asDomain,                           'Domain',                                0, False, '', True);
   InitSetting(asLoginPrompt,                      'LoginPrompt',                           0, False, '', True);
   InitSetting(asPort,                             'Port',                                  0, False, '', True);
   InitSetting(asLibrary,                          'Library',                               0, False, '', True); // Gets its default in TConnectionParameters.Create
