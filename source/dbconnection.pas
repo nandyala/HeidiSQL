@@ -2844,6 +2844,13 @@ begin
         else
           FAdoHandle.ConnectionString := FAdoHandle.ConnectionString + 'Trusted_Connection=yes;'
       end;
+
+      // Encrypt=true, and TrustServerCertificate=true with "No verification" on the SSL tab
+      if Parameters.WantSSL then begin
+        FAdoHandle.ConnectionString := FAdoHandle.ConnectionString + 'Use Encryption for Data=true;';
+        if (Parameters.SSLVerification = 0) and (not IsOldProvider) then
+          FAdoHandle.ConnectionString := FAdoHandle.ConnectionString + 'Trust Server Certificate=true;';
+      end;
     except
       on E:EOleException do
         raise EDbError.Create(E.Message);
@@ -2881,6 +2888,12 @@ begin
       // CurCharset := CharacterSet;
       // Log(lcDebug, 'Characterset: '+CurCharset);
       FAdoHandle.CommandTimeout := Parameters.QueryTimeout;
+      try
+        // CONNECTIONPROPERTY needs no VIEW SERVER STATE permission, unlike sys.dm_exec_connections
+        FIsSSL := UpperCase(GetVar('SELECT CONNECTIONPROPERTY('+EscapeString('encrypt_option')+')')) = 'TRUE';
+      except
+        FIsSSL := False;
+      end;
       try
         // Gracefully accept failure on MS Azure (SQL Server 11), which does not have a sysprocesses table
         FServerUptime := StrToIntDef(GetVar('SELECT DATEDIFF(SECOND, '+QuoteIdent('login_time')+', CURRENT_TIMESTAMP) FROM '+QuoteIdent('master')+'.'+QuoteIdent('dbo')+'.'+QuoteIdent('sysprocesses')+' WHERE '+QuoteIdent('spid')+'=1'), -1);

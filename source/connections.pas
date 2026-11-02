@@ -1598,7 +1598,7 @@ end;
 
 procedure Tconnform.ValidateControls;
 var
-  SessionFocused, FolderFocused: Boolean;
+  SessionFocused, FolderFocused, SSLFiles: Boolean;
   Params: TConnectionParameters;
 begin
   SessionFocused := False;
@@ -1681,15 +1681,17 @@ begin
       chkForceUnicode.Enabled := Params.NetTypeGroup = ngMySQL;
       editLogFilePath.Enabled := Params.LogFileDdl or Params.LogFileDml;
       // SSL tab:
-      chkWantSSL.Enabled := Params.NetType in [ntMySQL_TCPIP, ntMySQL_SSHtunnel, ntMySQL_ProxySQLAdmin, ntMySQL_RDS, ntPgSQL_TCPIP, ntPgSQL_SSHtunnel];
-      lblSSLPrivateKey.Enabled := Params.WantSSL;
-      editSSLPrivateKey.Enabled := Params.WantSSL;
-      lblSSLCACertificate.Enabled := Params.WantSSL;
-      editSSLCACertificate.Enabled := Params.WantSSL;
-      lblSSLCertificate.Enabled := Params.WantSSL;
-      editSSLCertificate.Enabled := Params.WantSSL;
-      lblSSLcipher.Enabled := Params.WantSSL;
-      editSSLcipher.Enabled := Params.WantSSL;
+      chkWantSSL.Enabled := Params.NetType in [ntMySQL_TCPIP, ntMySQL_SSHtunnel, ntMySQL_ProxySQLAdmin, ntMySQL_RDS, ntPgSQL_TCPIP, ntPgSQL_SSHtunnel, ntMSSQL_TCPIP];
+      // MSSQL only uses encryption and the verification mode, its certificates come from Windows
+      SSLFiles := Params.WantSSL and (not Params.IsAnyMSSQL);
+      lblSSLPrivateKey.Enabled := SSLFiles;
+      editSSLPrivateKey.Enabled := SSLFiles;
+      lblSSLCACertificate.Enabled := SSLFiles;
+      editSSLCACertificate.Enabled := SSLFiles;
+      lblSSLCertificate.Enabled := SSLFiles;
+      editSSLCertificate.Enabled := SSLFiles;
+      lblSSLcipher.Enabled := SSLFiles;
+      editSSLcipher.Enabled := SSLFiles;
       lblSSLVerification.Enabled := Params.WantSSL;
       comboSSLVerification.Enabled := Params.WantSSL;
 
